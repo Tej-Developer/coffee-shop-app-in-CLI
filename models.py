@@ -1,5 +1,10 @@
 import json
 from datetime import datetime
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
+
 
 class Coffee:
     def __init__(self, name, price, category=None):
@@ -8,8 +13,7 @@ class Coffee:
         self.category = category
 
     def __str__(self):
-        # return f"{self.name} ({self.category}) - ${self.price:.2f}"
-        return f"{self.name} - ${self.price:.2f}"
+        return f"{self.name} ({self.category}) - ₹{self.price:.2f}" if self.category else f"{self.name} - ₹{self.price:.2f}"
 
 class Order:
     def __init__(self, username):
@@ -38,19 +42,34 @@ class Order:
 
     def apply_discount(self):
         total = self.total()
-        if total > 10:
-            discount = total * 0.1
+        if total > 100:
+            discount = total * 0.2
             print(f"Discount: ₹{discount:.2f}")
             return total - discount
         return total
 
+    # def show_order(self):
+    #     if not self.items:
+    #         print("\nEmpty cart.")
+    #         return
+    #     for i, (item, qty) in enumerate(self.items, 1):
+    #         print(f"\n{i}. {item.name} x {qty} - ₹{item.price * qty:.2f}")
+    #     print(f"Total: ₹{self.apply_discount():.2f}")
+
     def show_order(self):
         if not self.items:
-            print("\nEmpty cart.")
+            console.print("\n[bold red]Empty cart.[/bold red]")
             return
+        table = Table(title="Your Order")
+        table.add_column("No", justify="center")
+        table.add_column("Coffee", justify="left")
+        table.add_column("Qty", justify="center")
+        table.add_column("Total Price", justify="right")
         for i, (item, qty) in enumerate(self.items, 1):
-            print(f"\n{i}. {item.name} x {qty} - ${item.price * qty:.2f}")
-        print(f"Total: ${self.apply_discount():.2f}")
+            table.add_row(str(i), item.name, str(qty), f"₹{item.price * qty:.2f}")
+        table.add_row("", "", "[bold]Total[/bold]", f"[bold green]₹{self.apply_discount():.2f}[/bold green]")
+        console.print(table)
+
 
     def checkout(self):
         if not self.items:
@@ -105,28 +124,36 @@ class UserManager:
             self.save_users()
         return User(username)
 
+    # def view_history(self, username):
+    #     print(f"\n--- Order History for {username} ---")
+    #     try:
+    #         with open("data/orders.json") as f:
+    #             for line in f:
+    #                 data = json.loads(line)
+    #                 if data["user"] == username:
+    #                     print(f"Date: {data['timestamp']}")
+    #                     for item in data["items"]:
+    #                         print(f"  {item['name']} x {item['qty']} - ₹{item['price'] * item['qty']:.2f}")
+    #                     print(f"Total: ₹{data['total']:.2f}\n")
+    #     except FileNotFoundError:
+    #         print("No history found.")
+
     def view_history(self, username):
-        print(f"\n--- Order History for {username} ---")
+        console.print(f"\n[bold blue]----- Order History for {username} -----[/bold blue]")
         try:
             with open("data/orders.json") as f:
+                found = False
                 for line in f:
                     data = json.loads(line)
                     if data["user"] == username:
-                        print(f"Date: {data['timestamp']}")
+                        found = True
+                        console.print(f"[cyan]Date:[/cyan] {data['timestamp']}")
                         for item in data["items"]:
-                            print(f"  {item['name']} x {item['qty']} - ${item['price'] * item['qty']:.2f}")
-                        print(f"Total: ${data['total']:.2f}\n")
+                            console.print(f"  {item['name']} x {item['qty']} - ₹{item['price'] * item['qty']:.2f}")
+                        console.print(f"[bold yellow]Total: ₹{data['total']:.2f}[/bold yellow]\n")
+                if not found:
+                    console.print("No history found.")
         except FileNotFoundError:
-            print("No history found.")
+            console.print("[red]No order history file found.[/red]")
 
-def load_menu():
-    return [
-        Coffee("Regular", 1.0, "Classic"),
-        Coffee("Black Coffee", 1.2, "Classic"),
-        Coffee("Cold Coffee", 1.5, "Cold"),
-        Coffee("Hot Chocolate Coffee", 3.5, "Hot"),
-        Coffee("Espresso", 2.5, "Hot"),
-        Coffee("Latte", 3.5, "Hot"),
-        Coffee("Cappuccino", 3.0, "Hot"),
-        Coffee("Americano", 2.0, "Hot")
-    ]
+

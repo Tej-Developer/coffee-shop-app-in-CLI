@@ -1,18 +1,33 @@
 from models import Coffee, Order, UserManager
 import json
 import os
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
+
+
+# def load_menu_from_json(filepath="menu.json"):
+#     try:
+#         with open(filepath, "r") as file:
+#             data = json.load(file)
+#             return [Coffee(item["name"], item["price"]) for item in data]
+#     except FileNotFoundError:
+#         print("Menu file not found.")
+#         return []
+#     except Exception as e:
+#         print(f"Error loading menu: {e}")
+#         raise []
 
 def load_menu_from_json(filepath="menu.json"):
     try:
         with open(filepath, "r") as file:
             data = json.load(file)
-            return [Coffee(item["name"], item["price"]) for item in data]
+            return [Coffee(item["name"], item["price"], item.get("category")) for item in data]
     except FileNotFoundError:
-        print("Menu file not found.")
+        console.print("[red]Menu file not found.[/red]")
         return []
-    except Exception as e:
-        print(f"Error loading menu: {e}")
-        raise []
+
 
 def get_valid_int(prompt, min_val=None):
     try:
@@ -73,15 +88,33 @@ def main():
         #             if qty:
         #                 order.add_item(selected[c_choice-1], qty)
 
+        # if choice == 1:
+        #     for i, coffee in enumerate(menu, 1):
+        #         print(f"{i}. {coffee}")
+        #     choose = get_valid_int("\nChoose an option: ")
+        #     if choose and 1 <= choose <= len(menu):
+        #         coffee = menu[choose - 1]
+        #         qty = get_valid_int(f"Enter quantity for {coffee.name}: ", min_val=1)
+        #         if qty is not None:
+        #             order.add_item(coffee, qty)
+
         if choice == 1:
+            table = Table(title="Coffee Menu")
+            table.add_column("No", justify="center")
+            table.add_column("Name", justify="left")
+            table.add_column("Category", justify="left")
+            table.add_column("Price", justify="right")
             for i, coffee in enumerate(menu, 1):
-                print(f"{i}. {coffee}")
+                table.add_row(str(i), coffee.name, coffee.category or "-", f"₹{coffee.price:.2f}")
+            console.print(table)
+            
             choose = get_valid_int("\nChoose an option: ")
             if choose and 1 <= choose <= len(menu):
                 coffee = menu[choose - 1]
                 qty = get_valid_int(f"Enter quantity for {coffee.name}: ", min_val=1)
                 if qty is not None:
                     order.add_item(coffee, qty)
+
 
         elif choice == 2:
             order.show_order()
@@ -119,6 +152,4 @@ def main():
 if __name__ == "__main__":
     os.system('cls' if os.name == 'nt' else 'clear')
     main()
-    # menu =  load_menu_from_json()
-    # print(menu)
 
