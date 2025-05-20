@@ -1,0 +1,14 @@
+Your Order:
+Latte x 2 - $7.00
+Cappuccino x 3 - $9.00
+Americano x 4 - $8.00
+Total after discount: $21.60
+Thank you!
+--------------------
+Your Order:
+Espresso x 1 - $2.50
+Latte x 1 - $3.50
+Total after discount: $6.00
+Order Date and time: 2025-05-19 19:20:29.739770
+Thank you!
+------------------------------
