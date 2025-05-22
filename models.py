@@ -21,21 +21,51 @@ class Order:
         self.items = []
 
     def add_item(self, coffee, quantity):
-        self.items.append((coffee, quantity))
+        if coffee in [item[0] for item in self.items]:
+            for i, item in enumerate(self.items):
+                if item[0] == coffee:
+                    self.items[i] = (coffee, item[1] + quantity)
+        else:
+            self.items.append((coffee, quantity))
         print(f"Added {quantity} x {coffee.name}")
+
+    # def remove_item(self):
+    #     if not self.items:
+    #         print("No items.")
+    #         return
+    #     self.show_order()
+    #     try:
+    #         idx = int(input("Item number to remove: ")) - 1
+    #         if 0 <= idx < len(self.items):
+    #             coffee, qty = self.items.pop(idx)
+    #             print(f"Removed {qty} x {coffee.name}")
+    #     except ValueError:
+    #         print("Invalid input.")
 
     def remove_item(self):
         if not self.items:
-            print("No items.")
+            console.print("[bold red]No items in the cart.[/bold red]")
             return
+
         self.show_order()
         try:
-            idx = int(input("Item number to remove: ")) - 1
+            idx = int(input("Enter item number to remove: ")) - 1
             if 0 <= idx < len(self.items):
-                coffee, qty = self.items.pop(idx)
-                print(f"Removed {qty} x {coffee.name}")
+                coffee, qty = self.items[idx]
+                if qty > 1:
+                    no = int(input("Enter number of quantity: "))
+                    self.items[idx] = (coffee, qty - no)
+                    console.print(f"[yellow]Removed {no} x {coffee.name}. Remaining: {qty - no}[/yellow]")
+                else:
+                    self.items.pop(idx)
+                    console.print(f"[red]Removed last 1 x {coffee.name} from cart.[/red]")
+            else:
+                console.print("[red]Invalid item number.[/red]")
         except ValueError:
-            print("Invalid input.")
+            console.print("[red]Invalid input. Please enter a number.[/red]")
+        except Exception as e:
+            console.print("[red]Invalid input. Please enter available number.[/red]")
+
 
     def total(self):
         return sum(item.price * qty for item, qty in self.items)
@@ -44,9 +74,17 @@ class Order:
         total = self.total()
         if total > 100:
             discount = total * 0.2
-            print(f"Discount: ₹{discount:.2f}")
+            # print(f"Discount: ₹{discount:.2f}")
             return total - discount
         return total
+    
+    def discount(self):
+        total = self.total()
+        if total > 100:
+            discount = total * 0.2
+            return discount
+        return 0
+        
 
     # def show_order(self):
     #     if not self.items:
@@ -67,6 +105,8 @@ class Order:
         table.add_column("Total Price", justify="right")
         for i, (item, qty) in enumerate(self.items, 1):
             table.add_row(str(i), item.name, str(qty), f"₹{item.price * qty:.2f}")
+        table.add_row("", "", "", "")
+        table.add_row("", "", "[bold]Discount[/bold]", f"[bold green]₹{self.discount():.2f}[/bold green]")
         table.add_row("", "", "[bold]Total[/bold]", f"[bold green]₹{self.apply_discount():.2f}[/bold green]")
         console.print(table)
 
